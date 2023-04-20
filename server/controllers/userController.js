@@ -10,9 +10,9 @@ module.exports.login = async (req, res, next) => {
     console.log(user);
     if (!user)
       return res.json({ msg: "Incorrect Username or Password", status: false });
-      // console.log(user.password)
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-     isPasswordValid = await(password == user.password)
+      console.log(user.password)
+     isPasswordValid = await bcrypt.compare(password, user.password);
+    //  isPasswordValid = await(password == user.password)
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
     delete user.password;
@@ -66,6 +66,7 @@ module.exports.register = async (req, res, next) => {
 
 module.exports.setAvatar = async (req, res, next) => {
   try {
+    console.log("ghjk");
     const userId = req.params.id;
     const avatarImage = req.body.image;
     const userData = await User.findByIdAndUpdate(
@@ -76,6 +77,7 @@ module.exports.setAvatar = async (req, res, next) => {
       },
       { new: true }
     );
+    console.log(userData);
     return res.json({
       isSet: userData.isAvatarImageSet,
       image: userData.avatarImage,

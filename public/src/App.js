@@ -3,6 +3,8 @@ import {BrowserRouter,Routes,Route} from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat";
+import Home from "./pages/Home";
+
 import SetAvatar from "./components/SetAvatar";
 
 function App() {
@@ -12,6 +14,8 @@ function App() {
       <Route path="/register" element={<Register/>}/>\
       <Route path="/login" element={<Login/>}/>
       <Route path="/chat" element={<Chat/>}/>
+      <Route path="/home" element={<Home/>}/>
+
       <Route path="/setavatar" element={<SetAvatar/>}/>
 
     </Routes>
