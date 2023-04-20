@@ -104,6 +104,18 @@ module.exports.addfriend = async (req,res,next)=>{
     next(ex);
   } 
 }
+module.exports.getrequests = async (req, res, next) => {
+  try {
+    // const user = await User.find({ _id:  req.params.id  });
+   const requests= friendrequests.find({receiver:req.params.id})
+
+   console.log(requests);
+    return res.json(requests); 
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 
 module.exports.getfriends = async (req, res, next) => {
   try {
