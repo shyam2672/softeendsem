@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 // const userModel = require()
+const bodyParser=require("body-parser");
 const User = require("./models/userModel");
 
 // const authRoutes = require("./routes/auth");
@@ -10,7 +11,9 @@ const app = express();
 // const socket = require("socket.io");
 require("dotenv").config();
 const authRoutes = require("./routes/userRoutes");
-
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(cors());
 app.use(express.json());
 

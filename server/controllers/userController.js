@@ -72,9 +72,13 @@ module.exports.register = async (req, res, next) => {
 module.exports.sendrequest = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const sender = req.params.senderid;
-    const receiver = req.params.receiverid;
-    const request = friendrequests.create({ sender, receiver });
+    console.log(req.body);
+    const sender = req.body.sender;
+    const receiver = req.body.receiver;
+    console.log(sender);
+    console.log(receiver);
+
+    const request = await friendrequests.create({ sender, receiver });
     console.log(request);
     return res.json({ status: true, request });
   } catch (ex) {
@@ -85,23 +89,24 @@ module.exports.sendrequest = async (req, res, next) => {
 module.exports.addfriend = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const sender = req.params.senderid;
-    const receiver = req.params.receiverid;
+    const senderid = req.body.senderid;
+    const receiverid = req.body.receiverid;
     // const user=user.findOne({receiver});
-    const user = User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { _id: receiverid },
-      { $push: { friends: sender } },
-      { new: true },
-      (err, user) => {
-        if (err) {
-          // handle error
-        } else {
-          // user.friends now includes the new friendId
-          console.log(user);
-          return res.json({ status: true, user });
-        }
-      }
+      { $push: { friends: senderid } },
+      { new: true }
     );
+    const user1 = await User.findOneAndUpdate(
+      { _id: senderid },
+      { $push: { friends: receiverid } },
+      { new: true }
+    );
+    console.log(user);
+    console.log(user1);
+
+    return res.json({ user, user1 });
+
     // const request=friendrequests.create({sender,receiver});
   } catch (ex) {
     next(ex);
@@ -110,8 +115,7 @@ module.exports.addfriend = async (req, res, next) => {
 module.exports.getrequests = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const requests = friendrequests.find({ receiver: req.params.id });
-
+    const requests = await friendrequests.find({ receiver: req.params.id });
     console.log(requests);
     return res.json(requests);
   } catch (ex) {
@@ -122,11 +126,12 @@ module.exports.getrequests = async (req, res, next) => {
 module.exports.getfriends = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const friends = User.findById({ _id: req.params.id })
-      .populate("friends")
-      .select("email", "username", "avatarImage", "_id", "rating");
+    console.log(req.params.id);
+    const user = await User.findById({ _id: req.params.id })
+  
+    const friends = user.friends;
     console.log(friends);
-    // return res.json(users);
+    return res.json(friends);
   } catch (ex) {
     next(ex);
   }
