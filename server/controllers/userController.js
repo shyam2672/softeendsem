@@ -22,6 +22,23 @@ module.exports.login = async (req, res, next) => {
   }
 };
 
+module.exports.getuserinfo = async (req, res, next) => {
+  // console.log(req.body);
+    try {
+      const userid=req.params.id;
+      const user = await User.findOne({ id }).select({
+        username,email,rating,avatarImage,gender,
+      });
+  console.log(user);
+      // delete user.password;
+      return res.json({ status: true, user });
+    } catch (ex) {
+      console.log(ex);
+      next(ex);
+    }
+};
+
+
 module.exports.register = async (req, res, next) => {
   console.log(req.body);
     try {
@@ -63,7 +80,7 @@ module.exports.sendrequest= async (req,res,next)=>{
   } 
 }
 
-module.exports.addfriend= async (req,res,next)=>{
+module.exports.addfriend = async (req,res,next)=>{
   try {
     // const user = await User.find({ _id:  req.params.id  });
     const sender=req.params.senderid;
@@ -71,19 +88,18 @@ module.exports.addfriend= async (req,res,next)=>{
     // const user=user.findOne({receiver});
    const user= User.findOneAndUpdate(
       { _id: receiverid },
-      { $push: { friends: sender } }).then((response) => {
-        res.json(response)
+      { $push: { friends: sender } },
+      { new: true }, (err, user) => {
+        if (err) {
+          // handle error
+        } else {
+          // user.friends now includes the new friendId
+          console.log(user);
+          return res.json({ status: true, user });
+        }
       })
-      .catch(error => {
-        res.json(error)
-      })
-      
-    
-    
   // const request=friendrequests.create({sender,receiver});
-   console.log(user);
-   return res.json({ status: true, request }); 
-
+   
   } catch (ex) {
     next(ex);
   } 
