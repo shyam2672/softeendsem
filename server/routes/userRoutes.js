@@ -4,7 +4,7 @@ const userctrl = require("../controllers/userController.js");
 router.post("/register", userctrl.register);
 router.post("/login", userctrl.login);
 router.post("/setavatar/:id", userctrl.setAvatar);
-router.get("/friends/:id", userctrl.getfriends);
+router.post("/friends", userctrl.getfriends);
 router.post("/sendrequest", userctrl.sendrequest);
 router.get("/getrequests/:id", userctrl.getrequests);
 router.post("/addfriend", userctrl.addfriend);

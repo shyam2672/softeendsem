@@ -3,13 +3,13 @@ const bcrypt = require("bcrypt");
 const friendrequests = require("../models/friendrequests");
 module.exports.login = async (req, res, next) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     const { username, password } = req.body;
     const user = await User.findOne({ username });
-    console.log(user);
+    // console.log(user);
     if (!user)
       return res.json({ msg: "Incorrect Username or Password", status: false });
-    console.log(user.password);
+    // console.log(user.password);
     isPasswordValid = await bcrypt.compare(password, user.password);
     //  isPasswordValid = await(password == user.password)
     if (!isPasswordValid)
@@ -32,17 +32,17 @@ module.exports.getuserinfo = async (req, res, next) => {
       avatarImage,
       gender,
     });
-    console.log(user);
+    // console.log(user);
     // delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
-    console.log(ex);
+    // console.log(ex);
     next(ex);
   }
 };
 
 module.exports.register = async (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   try {
     const { username, email, password, gender } = req.body;
     const usernameCheck = await User.findOne({ username });
@@ -59,12 +59,12 @@ module.exports.register = async (req, res, next) => {
       gender,
       password: hashedPassword,
     });
-    console.log(user);
+    // console.log(user);
 
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
-    console.log(ex);
+    // console.log(ex);
     next(ex);
   }
 };
@@ -72,14 +72,14 @@ module.exports.register = async (req, res, next) => {
 module.exports.sendrequest = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    console.log(req.body);
+    // console.log(req.body);
     const sender = req.body.sender;
     const receiver = req.body.receiver;
-    console.log(sender);
-    console.log(receiver);
+    // console.log(sender);
+    // console.log(receiver);
 
     const request = await friendrequests.create({ sender, receiver });
-    console.log(request);
+    // console.log(request);
     return res.json({ status: true, request });
   } catch (ex) {
     next(ex);
@@ -102,8 +102,8 @@ module.exports.addfriend = async (req, res, next) => {
       { $push: { friends: receiverid } },
       { new: true }
     );
-    console.log(user);
-    console.log(user1);
+    // console.log(user);
+    // console.log(user1);
 
     return res.json({ user, user1 });
 
@@ -116,7 +116,7 @@ module.exports.getrequests = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
     const requests = await friendrequests.find({ receiver: req.params.id });
-    console.log(requests);
+    // console.log(requests);
     return res.json(requests);
   } catch (ex) {
     next(ex);
@@ -126,11 +126,19 @@ module.exports.getrequests = async (req, res, next) => {
 module.exports.getfriends = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    console.log(req.params.id);
-    const user = await User.findById({ _id: req.params.id })
+    const userid=req.body.id
+    // console.log(userid);
+    const user = await User.findById(userid)
   
-    const friends = user.friends;
-    console.log(friends);
+    const userfriendsids = user.friends;
+     let friends=[];
+  for (const friendid of userfriendsids) {
+    const user = await User.findById(friendid);
+    friends.push(user);
+  }
+
+  // res.json(users);
+    // console.log(friends);
     return res.json(friends);
   } catch (ex) {
     next(ex);
@@ -139,7 +147,7 @@ module.exports.getfriends = async (req, res, next) => {
 
 module.exports.setAvatar = async (req, res, next) => {
   try {
-    console.log("ghjk");
+    // console.log("ghjk");
     const userId = req.params.id;
     const avatarImage = req.body.image;
     const userData = await User.findByIdAndUpdate(
@@ -150,7 +158,7 @@ module.exports.setAvatar = async (req, res, next) => {
       },
       { new: true }
     );
-    console.log(userData);
+    // console.log(userData);
     return res.json({
       isSet: userData.isAvatarImageSet,
       image: userData.avatarImage,

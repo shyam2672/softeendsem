@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema({
     max: 20,
     unique: true,
   },
+  random_username: {
+    type: String,
+    default: "",
+
+  },
   email: {
     type: String,
     required: true,
@@ -42,7 +47,7 @@ const userSchema = new mongoose.Schema({
   onlineStatus: {
     type: String,
     default: "",
-  }
+  },
 });
 
 module.exports = mongoose.model("users", userSchema);
