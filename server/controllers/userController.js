@@ -24,8 +24,8 @@ module.exports.login = async (req, res, next) => {
 module.exports.getuserinfo = async (req, res, next) => {
   // console.log(req.body);
   try {
-    const userid = req.params.id;
-    const user = await User.findOne({ id }).select({
+    const { _id } = req.body;
+    const user = await User.findOne({ _id }).select({
       username,
       email,
       rating,
@@ -126,18 +126,18 @@ module.exports.getrequests = async (req, res, next) => {
 module.exports.getfriends = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const userid=req.body.id
+    const userid = req.body.id;
     // console.log(userid);
-    const user = await User.findById(userid)
-  
-    const userfriendsids = user.friends;
-     let friends=[];
-  for (const friendid of userfriendsids) {
-    const user = await User.findById(friendid);
-    friends.push(user);
-  }
+    const user = await User.findById(userid);
 
-  // res.json(users);
+    const userfriendsids = user.friends;
+    let friends = [];
+    for (const friendid of userfriendsids) {
+      const user = await User.findById(friendid);
+      friends.push(user);
+    }
+
+    // res.json(users);
     // console.log(friends);
     return res.json(friends);
   } catch (ex) {
