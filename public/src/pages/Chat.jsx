@@ -14,7 +14,7 @@ export default function Chat() {
   const [contacts, setContacts] = useState([]);
   const [currentChat, setCurrentChat] = useState(undefined);
   const [currentUser, setCurrentUser] = useState(undefined);
-  useEffect(async () => {
+  const func3=async () => {
     if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
       navigate("/login");
     } else {
@@ -24,14 +24,19 @@ export default function Chat() {
         )
       );
     }
+  }
+  useEffect(async () => {
+   func3()
   }, []);
   useEffect(() => {
     if (currentUser) {
       socket.current = io(host);
       socket.current.emit("add-user", currentUser._id);
+
     }
   }, [currentUser]);
 
+ 
   const myfunction=async () => {
     if (currentUser) {
       if (currentUser.isAvatarImageSet) {

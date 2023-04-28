@@ -6,12 +6,30 @@ import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
 
-export default function ChatContainer({ currentChat,socket}) {
+export default function ChatContainer({currentuser, socket}) {
+  const [roomid,setroomid]=useState(undefined);
+  const [isfilled, setisfilled] = useState(true);
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const [data,setdata]=useState(null);
-console.log(currentChat)
+
+  const handleroomchange = async () => {
+    // setisfilled(roomstatus);
+    socket.current.emit("privateRoom",currentuser._id);
+
+    await socket.current.on("private ack", (message,roomID,staus) => {
+      console.log(message);
+      setroomid(message.roomID);
+      setisfilled(message.isfilled);
+      setMessages([]);
+    // console.log(roomID);
+    // console.log(isfilled);
+
+    });
+    
+  };
+// console.log(currentChat)
   const func1=async () => {
     setdata(await JSON.parse(
       localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
@@ -22,48 +40,58 @@ console.log(currentChat)
     // });
     // setMessages(response.data);
   }
-  useEffect( () => {
-  func1()
-  }, [currentChat]);
+  useEffect(()=>{
 
-  const getCurrentChat = async () => {
-    if (currentChat) {
-      await JSON.parse(
-        localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-      )._id;
-    }
-  };
+  },[]);
+//   useEffect( () => {
+//   func1()
+//   }, [currentChat]);
+
+//   const getCurrentChat = async () => {
+//     if (currentChat) {
+//       await JSON.parse(
+//         localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+//       )._id;
+//     }
+//   };
 
      
-  useEffect(() => {
-    getCurrentChat();
-  }, [currentChat]);
+//   useEffect(() => {
+//     getCurrentChat();
+//   }, [currentChat]);
 
   const handleSendMsg = async (msg) => {
-    // alert(msg)
-    const data = await JSON.parse(
-      localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-    );
-    socket.current.emit("send-msg", {
-      to: currentChat._id,
-      from: data._id,
-      msg,
+//     // alert(msg)
+//     const data = await JSON.parse(
+//       localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+//     );
+console.log(roomid);
+    socket.current.emit("sendMessage", {
+      room_id: roomid,
+      from: currentuser._id,
+      message: msg,
     });
-    // await axios.post(sendMessageRoute, {
-    //   from: data._id,
-    //   to: currentChat._id,
-    //   message: msg,
-    // });
+//     // await axios.post(sendMessageRoute, {
+//     //   from: data._id,
+//     //   to: currentChat._id,
+//     //   message: msg,
+//     // });
 
     const msgs = [...messages];
-    msgs.push({ fromSelf: true, message: msg,senderid: data._id,receiverid: currentChat._id });
+    msgs.push({ fromSelf: true, message: msg,senderid: currentuser._id });
     setMessages(msgs);
   };
 
   useEffect(() => {
     if (socket.current) {
-      socket.current.on("msg-recieve", (msg,senderid,receiverid) => {
-        setArrivalMessage({ fromSelf: false, message: msg,senderid:senderid,receiverid:receiverid });
+      socket.current.on("newMessage", (message) => {
+        console.log(message);
+        // console.log(senderid);
+        // console.log(roomid);
+        console.log(message.senderId);
+        console.log(currentuser._id);
+if(message.senderId!=currentuser._id)
+      {  setArrivalMessage({ fromSelf: false, message: message.message,senderid:message.senderId });}
       });
     }
   }, []);
@@ -80,29 +108,24 @@ console.log(messages)
   return (
     <Container>
       {/* <div>Raj</div> */}
+    
+
+
       <div className="chat-header">
         <div className="user-details">
-          <div className="avatar">
-            <img
-              src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
-              alt=""
-            />
-          </div>
-          <div className="username">
-            <h3>{currentChat.username}</h3>
-          </div>
+        <button onClick={handleroomchange}>new chat</button>
+      <button onClick={handleroomchange}>end chat</button>
+         Random user name
         </div>
         <Logout />
       </div> 
        <div className="chat-messages">
        
 
-        {messages.map((message) => {
-          console.log(message.senderid);
-          console.log(message.receiverid);
+        { messages.map((message) => { 
+          // console.log(message.senderid);
+          // console.log(message.receiverid);
 
-        //  if(message.senderid==message.receiverid){
-if(message.fromSelf && message.receiverid==currentChat._id){
      return (
             <div ref={scrollRef} key={uuidv4()}>
               <div
@@ -116,39 +139,7 @@ if(message.fromSelf && message.receiverid==currentChat._id){
               </div>
             </div>
           );
-         }
-else if(message.receiverid==data._id && message.senderid==currentChat._id){
-     return (
-            <div ref={scrollRef} key={uuidv4()}>
-              <div
-                className={`message ${
-                  message.fromSelf ? "sended" : "recieved"
-                }`}
-              >
-                <div className="content ">
-                  <p>{message.message}</p>
-                </div>
-              </div>
-            </div>
-          );
-         }
-
-          // return (
-          //   <div ref={scrollRef} key={uuidv4()}>
-          //     <div
-          //       className={`message ${
-          //         message.fromSelf ? "sended" : "recieved"
-          //       }`}
-          //     >
-          //       <div className="content ">
-          //         <p>{message.message}</p>
-          //       </div>
-          //     </div>
-          //   </div>
-          // );
-        //  }
-        
-        })}
+        })} 
       </div> 
       <ChatInput handleSendMsg={handleSendMsg} />
     </Container>

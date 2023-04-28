@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat";
 import Home from "./pages/Home";
+import RandomChat from "./pages/RandomChat";
 
 import SetAvatar from "./components/SetAvatar";
 
@@ -15,6 +16,7 @@ function App() {
       <Route path="/login" element={<Login/>}/>
       <Route path="/chat" element={<Chat/>}/>
       <Route path="/home" element={<Home/>}/>
+      <Route path="/randomchat" element={<RandomChat/>}/>
 
       <Route path="/setavatar" element={<SetAvatar/>}/>
 
