@@ -99,7 +99,6 @@ io.on("connection", (socket) => {
     //get index of randomly selected user from the available users list
     let selected = Math.floor(Math.random() * availableUsers.length);
     //store the user in Socket
-
     socket = availableUsers[selected];
 
     //remove the randomly selected user from the available users list
@@ -116,11 +115,10 @@ io.on("connection", (socket) => {
     // socket.emit('private ack', { "message": "Added to privateRoom", "roomID": uID });
     socket.emit("ack", { id: socket.id, msg: "User connected" });
     randomonlineUsers.push(socket);
-    console.log("fuckyou");
 
     socket.on("privateRoom", (user) => {
-      console.log("ffff");
-
+      // console.log("ffff");
+      console.log(user);
       let unfilledRooms = rooms.filter((room) => {
         if (!room.isFilled) {
           return room;
@@ -134,28 +132,32 @@ io.on("connection", (socket) => {
         let index = rooms.indexOf(unfilledRooms[0]);
         rooms[index].isFilled = true;
         unfilledRooms[0].isFilled = true;
+        unfilledRooms[0].user2 = user;
         console.log(rooms);
         socket.emit("private ack", {
           message: "Added to privateRoom",
           roomID: unfilledRooms[0].roomID,
-          isfilled:false,
+          isfilled: true,
+          user1: unfilledRooms[0].user1,
+          user2: user._id,
         });
         socket.roomID = unfilledRooms[0].roomID;
-        io.sockets
-          .in(socket.roomID)
-          .emit("toast", { message: "You are connected with a stranger!" });
+        io.sockets.in(socket.roomID).emit("strangerConnected", {
+          message: "You are connected with a stranger!",
+          stranger: user,
+        });
       } catch (e) {
         // dont have unfilled rooms. Thus creating a new user.
         let uID = uniqueID();
-        rooms.push({ roomID: uID, isFilled: false });
+        rooms.push({ roomID: uID, isFilled: false, user1: user, user2: "" });
         socket.join(uID);
         socket.roomID = uID;
         console.log(rooms);
 
         socket.emit("private ack", {
           message: "Added to privateRoom",
-          roomID:uID,
-          isfilled: true,
+          roomID: uID,
+          isfilled: false,
         });
       }
     });
@@ -166,10 +168,10 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", (data) => {
     // let timeStamp = moment().format("LT");
     console.log(data);
-    io.sockets.in(data.room).emit("newMessage", {
+    io.sockets.in(data.room_id).emit("newMessage", {
       message: data.message,
       senderId: data.from,
-      roomID:data.roomid,
+      roomID: data.room_id,
       // timeStamp: timeStamp,
     });
   });
