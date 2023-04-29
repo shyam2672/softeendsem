@@ -177,16 +177,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendrequest", (data) => {
+    console.log(data);
     io.sockets.in(data.room).emit("receiverequest", {
       sendersocketId: windowID.id,
-      senderid: data.user,
+      senderid: data.from,
     });
   });
 
-  socket.on("rspondrequest", (data) => {
+  socket.on("respondrequest", (data) => {
     io.sockets.in(data.room).emit("requestresponse", {
       sendersocketId: windowID.id,
-      senderid: data.user,
+      senderid: data.from,
       response: data.response,
     });
   });
