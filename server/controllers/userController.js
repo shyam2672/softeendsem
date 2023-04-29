@@ -92,6 +92,20 @@ module.exports.addfriend = async (req, res, next) => {
     const senderid = req.body.senderid;
     const receiverid = req.body.receiverid;
     // const user=user.findOne({receiver});
+    try{
+   const person=await User.findById(senderid);
+   if(!person){
+    return res.json({ status: false, message: "no user exists" });
+
+   }
+   if(person.friends.includes(receiverid)){
+    return res.json({ status: false, message: "already added as friend" });
+
+   }
+    }catch(ex){
+        console.log(ex);
+    }
+
     const user = await User.findOneAndUpdate(
       { _id: receiverid },
       { $push: { friends: senderid } },
@@ -104,8 +118,9 @@ module.exports.addfriend = async (req, res, next) => {
     );
     // console.log(user);
     // console.log(user1);
+    return res.json({ status: true, message: "friend added successfully" });
 
-    return res.json({ user, user1 });
+
 
     // const request=friendrequests.create({sender,receiver});
   } catch (ex) {
@@ -122,6 +137,27 @@ module.exports.getrequests = async (req, res, next) => {
     next(ex);
   }
 };
+
+module.exports.rateuser = async (req, res, next) => {
+  try {
+    // const user = await User.find({ _id:  req.params.id  });
+    const id=req.body.id;
+    const ratingval=req.body.ratingval;
+    const user = await User.findById(id);
+    let n=user.ratedby;
+    let rating=user.rating;
+    rating=n*rating+ratingval;
+    n=n+1;
+    rating=rating/n;
+    const user1 = await User.findByIdAndUpdate(id, { rating:rating, ratedby:n }, { new: true });
+   
+    // console.log(requests);
+    return res.json(requests);
+  } catch (ex) {
+    next(ex);
+  }
+};
+
 
 module.exports.getfriends = async (req, res, next) => {
   try {

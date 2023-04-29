@@ -8,6 +8,8 @@ router.post("/friends", userctrl.getfriends);
 router.post("/sendrequest", userctrl.sendrequest);
 router.get("/getrequests/:id", userctrl.getrequests);
 router.post("/addfriend", userctrl.addfriend);
+router.post("/rate", userctrl.addfriend);
+
 router.get("/getuserinfo/:id", userctrl.getuserinfo);
 
 module.exports = router;

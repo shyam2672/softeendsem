@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
+    default:0,
+  },
+  ratedby: {
+    type: Number,
+    default:0,
   },
   gender: {
     type: String,
