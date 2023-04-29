@@ -138,13 +138,13 @@ io.on("connection", (socket) => {
           message: "Added to privateRoom",
           roomID: unfilledRooms[0].roomID,
           isfilled: true,
-          user1: unfilledRooms[0].user1,
-          user2: user._id,
+        
         });
         socket.roomID = unfilledRooms[0].roomID;
         io.sockets.in(socket.roomID).emit("strangerConnected", {
           message: "You are connected with a stranger!",
-          stranger: user,
+          user1: unfilledRooms[0].user1,
+          user2: user,
         });
       } catch (e) {
         // dont have unfilled rooms. Thus creating a new user.
@@ -176,6 +176,23 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("sendrequest", (data) => {
+    console.log(data);
+    io.sockets.in(data.room).emit("receiverequest", {
+      sendersocketId: windowID.id,
+      senderid: data.from,
+    });
+  });
+
+  socket.on("respondrequest", (data) => {
+    io.sockets.in(data.room).emit("requestresponse", {
+      sendersocketId: windowID.id,
+      senderid: data.from,
+      response: data.response,
+    });
+  });
+
+ 
   socket.on("typing", (data) => {
     io.sockets.in(data.room).emit("addTyping", {
       senderId: windowID.id,
