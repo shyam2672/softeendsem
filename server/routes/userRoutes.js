@@ -9,6 +9,7 @@ router.post("/sendrequest", userctrl.sendrequest);
 router.post("/getrequests", userctrl.getrequests);
 router.post("/addfriend", userctrl.addfriend);
 router.post("/getuserinfo", userctrl.getuserinfo);
-router.post("/setrandomusername",userctrl.setrandomusername);
+router.post("/setrandomusername", userctrl.setrandomusername);
+router.get('/verify/:id', userctrl.verify);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const jwt = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -25,11 +26,11 @@ const userSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    default:0,
+    default: 0,
   },
   ratedby: {
     type: Number,
-    default:0,
+    default: 0,
   },
   gender: {
     type: String,
@@ -50,6 +51,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  isVerfied: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+userSchema.methods.generateVerificationToken = function () {
+  const user = this;
+  const verificationToken = jwt.sign(
+    { ID: user._id },
+    process.env.USER_VERIFICATION_TOKEN_SECRET,
+    { expiresIn: "1d" }
+  );
+  return verificationToken;
+};
+
+
 
 module.exports = mongoose.model("users", userSchema);

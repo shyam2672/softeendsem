@@ -1,6 +1,23 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const friendrequests = require("../models/friendrequests");
+
+
+
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+  host: 'smtp-mail.outlook.com',                  // hostname
+  service: 'outlook',                             // service name
+  secureConnection: false,
+  tls: {
+    ciphers: 'SSLv3'                            // tls version
+  },
+  auth: {
+    user: process.env.EMAIL_USERNAME,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
 module.exports.login = async (req, res, next) => {
   try {
     // console.log(req.body);
@@ -62,6 +79,27 @@ module.exports.register = async (req, res, next) => {
     });
     // console.log(user);
 
+    const verificationToken = user.generateVerificationToken();
+    // console.log(verificationToken);
+    const verificationLink = `${process.env.CLIENT_URL}/verify/${verificationToken}`;
+    // console.log(verificationLink);
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: email,
+      subject: 'Verify your email',
+      html: `<h1>Click on the link below to verify your email</h1><br><a href="${verificationLink}">Verify Email</a>`,
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.json({ msg: "Error sending email", status: false });
+      }
+      console.log(info);
+      delete user.password;
+      return res.json({ status: true, user });
+    });
+
+
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
@@ -69,6 +107,44 @@ module.exports.register = async (req, res, next) => {
     next(ex);
   }
 };
+
+module.exports.verify = async (req, res) => {
+  const { token } = req.params;
+  // Check we have an id
+  if (!token) {
+    return res.status(422).send({
+      message: "Missing Token"
+    });
+  }
+  // Step 1 -  Verify the token from the URL
+  let payload = null;
+  try {
+    payload = jwt.verify(
+      token,
+      process.env.USER_VERIFICATION_TOKEN_SECRET
+    );
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+  try {
+    // Step 2 - Find user with matching ID
+    const user = await User.findOne({ _id: payload.ID }).exec();
+    if (!user) {
+      return res.status(404).send({
+        message: "User does not  exists"
+      });
+    }
+    // Step 3 - Update user verification status to true
+    user.isVerified = true;
+    await user.save();
+    return res.status(200).send({
+      message: "Account Verified"
+    });
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+};
+
 
 module.exports.sendrequest = async (req, res, next) => {
   try {
@@ -93,18 +169,18 @@ module.exports.addfriend = async (req, res, next) => {
     const senderid = req.body.senderid;
     const receiverid = req.body.receiverid;
     // const user=user.findOne({receiver});
-    try{
-   const person=await User.findById(senderid);
-   if(!person){
-    return res.json({ status: false, message: "no user exists" });
+    try {
+      const person = await User.findById(senderid);
+      if (!person) {
+        return res.json({ status: false, message: "no user exists" });
 
-   }
-   if(person.friends.includes(receiverid)){
-    return res.json({ status: false, message: "already added as friend" });
+      }
+      if (person.friends.includes(receiverid)) {
+        return res.json({ status: false, message: "already added as friend" });
 
-   }
-    }catch(ex){
-        console.log(ex);
+      }
+    } catch (ex) {
+      console.log(ex);
     }
 
     const user = await User.findOneAndUpdate(
@@ -142,16 +218,16 @@ module.exports.getrequests = async (req, res, next) => {
 module.exports.rateuser = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
-    const id=req.body.id;
-    const ratingval=req.body.ratingval;
+    const id = req.body.id;
+    const ratingval = req.body.ratingval;
     const user = await User.findById(id);
-    let n=user.ratedby;
-    let rating=user.rating;
-    rating=n*rating+ratingval;
-    n=n+1;
-    rating=rating/n;
-    const user1 = await User.findByIdAndUpdate(id, { rating:rating, ratedby:n }, { new: true });
-   
+    let n = user.ratedby;
+    let rating = user.rating;
+    rating = n * rating + ratingval;
+    n = n + 1;
+    rating = rating / n;
+    const user1 = await User.findByIdAndUpdate(id, { rating: rating, ratedby: n }, { new: true });
+
     // console.log(requests);
     return res.json(requests);
   } catch (ex) {
