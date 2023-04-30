@@ -169,3 +169,24 @@ module.exports.setAvatar = async (req, res, next) => {
   }
 };
 
+module.exports.setrandomusername = async (req, res, next) => {
+  try {
+    const userId = req.body.id;
+    const random_username = req.body.random_username;
+    console.log(random_username);
+    console.log(userId);
+    const userData = await User.findByIdAndUpdate(
+      userId,
+      {
+        random_username,
+      },
+      { new: true }
+    );
+    console.log(userData);
+    return res.json({
+      random_username: userData.random_username,
+    });
+  } catch (ex) {
+    next(ex);
+  }
+};

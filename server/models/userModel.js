@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema({
   random_username: {
     type: String,
     default: "",
-
   },
   email: {
     type: String,
@@ -41,8 +40,6 @@ const userSchema = new mongoose.Schema({
   },
   friends: {
     type: [mongoose.SchemaTypes.ObjectId],
-
-    // ids corresponding to each object
   },
   onlineStatus: {
     type: String,
