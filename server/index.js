@@ -16,6 +16,7 @@ const app = express();
 // const socket = require("socket.io");
 require("dotenv").config();
 const authRoutes = require("./routes/userRoutes");
+const { off } = require("./models/friendrequests");
 app.use(
   bodyParser.urlencoded({
     extended: true,
@@ -49,33 +50,53 @@ const io = socket(server, {
   },
 });
 
-global.onlineUsers = new Map();
+global.onlineUsers = [];
 global.randomonlineUsers = [];
 global.availableUsers = [];
 global.rooms = [];
 global.queue = [];
+const offlineMessages={};
 
 io.on("connection", (socket) => {
   global.chatSocket = socket;
-  console.log(onlineUsers);
+  console.log("user connected");
   // console.log(randomonlineUsers);
-  console.log(rooms);
-  console.log("fuck");
   socket.on("add-user", (userId) => {
-    onlineUsers.set(userId, socket.id);
+    console.log(userId);
+
+    console.log(userId.userId);
+    onlineUsers[userId.userId]= socket.id;
+    console.log(onlineUsers);
+
+const messages=offlineMessages[userId.userId];
+console.log(messages);
+if(messages && messages.length>0){
+  socket.emit('offlineMessages',{"ashishrajprashantshyam":messages});
+      delete offlineMessages[userId.userId];
+}
     // console.log(onlineUsers);
   });
 
   socket.on("send-msg", (data) => {
-    const sendUserSocket = onlineUsers.get(data.to);
+    console.log(data.to);
+
+    const sendUserSocket = onlineUsers[data.to];
+
+    console.log(data);
+    console.log(sendUserSocket);
+
     // console.log(sendUserSocket);
     // console.log(data.to);
     if (sendUserSocket) {
       socket
         .to(sendUserSocket)
-        .emit("msg-recieve", data.msg, data.from, data.to);
+        .emit("msg-recieve",{message: data.message,from: data.from,to: data.to});
     } else {
-      console.log("fidptr");
+    if(!offlineMessages[data.to]){
+      offlineMessages[data.to]=[];
+    }
+      offlineMessages[data.to].push({"prashantrajprashantshyam": `"${data.from}"`,"shyamrajprashantshyam":   `"${data.message}"` });
+      console.log(offlineMessages[data.to]);
     }
   });
 
@@ -94,7 +115,6 @@ io.on("connection", (socket) => {
   };
   async function asyncCall() {
     let result = await resolveAfter5Seconds();
-    console.log("Fff");
 
     //get index of randomly selected user from the available users list
     let selected = Math.floor(Math.random() * availableUsers.length);
@@ -103,7 +123,7 @@ io.on("connection", (socket) => {
 
     //remove the randomly selected user from the available users list
     availableUsers.splice(selected, 1);
-
+    
     // Make a user object and add it to the onlineUsers list and rooms too(maybe we can add to room once we have the partner.)
     // create an unique id here.
     // let uID = uniqueID();
@@ -162,7 +182,7 @@ io.on("connection", (socket) => {
       }
     });
   }
-  console.log("sdfrwsd");
+  // console.log("sdfrwsd");
   asyncCall();
 
   socket.on("sendMessage", (data) => {
@@ -198,6 +218,10 @@ io.on("connection", (socket) => {
       senderId: windowID.id,
       typingStatus: data.typingStatus,
     });
+  });
+
+  socket.on("disconnectprivate", (data) => {
+      delete  onlineUsers[data.userid];
   });
 
   // Disconnect the user
