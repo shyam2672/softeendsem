@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const friendrequests = require("../models/friendrequests");
+const jwt = require("jsonwebtoken");
 
 
 
@@ -31,6 +32,8 @@ module.exports.login = async (req, res, next) => {
     //  isPasswordValid = await(password == user.password)
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
+    if (user.isVerified == false)
+      return res.json({ msg: "Email not verified", status: false });
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
@@ -61,13 +64,14 @@ module.exports.getuserinfo = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   // console.log(req.body);
   try {
-    const { username, email, password, gender, avatarImage } = req.body;
+    const { username, email, password, gender, avatarImage, isVerified } = req.body;
     const usernameCheck = await User.findOne({ username });
     if (usernameCheck)
       return res.json({ msg: "Username already used", status: false });
     const emailCheck = await User.findOne({ email });
     if (emailCheck)
       return res.json({ msg: "Email already used", status: false });
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -80,9 +84,9 @@ module.exports.register = async (req, res, next) => {
     // console.log(user);
 
     const verificationToken = user.generateVerificationToken();
-    // console.log(verificationToken);
-    const verificationLink = `${process.env.CLIENT_URL}/verify/${verificationToken}`;
-    // console.log(verificationLink);
+    console.log("verificationToken = " + verificationToken);
+    const verificationLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    console.log("verificationLink = " + verificationLink);
     const mailOptions = {
       from: process.env.EMAIL_USERNAME,
       to: email,
@@ -94,7 +98,7 @@ module.exports.register = async (req, res, next) => {
         console.log(err);
         return res.json({ msg: "Error sending email", status: false });
       }
-      console.log(info);
+      console.log(" info " + info);
       delete user.password;
       return res.json({ status: true, user });
     });
@@ -108,40 +112,30 @@ module.exports.register = async (req, res, next) => {
   }
 };
 
-module.exports.verify = async (req, res) => {
-  const { token } = req.params;
-  // Check we have an id
-  if (!token) {
-    return res.status(422).send({
-      message: "Missing Token"
-    });
-  }
-  // Step 1 -  Verify the token from the URL
-  let payload = null;
+exports.verify = async (req, res) => {
   try {
-    payload = jwt.verify(
-      token,
-      process.env.USER_VERIFICATION_TOKEN_SECRET
-    );
-  } catch (err) {
-    return res.status(500).send(err);
-  }
-  try {
-    // Step 2 - Find user with matching ID
-    const user = await User.findOne({ _id: payload.ID }).exec();
+    const token = req.params.id;
+    console.log("token = " + token);
+    const decoded = jwt.verify(token, process.env.USER_VERIFICATION_TOKEN_SECRET);
+    const userId = decoded.ID;
+
+    const user = await User.findById(userId);
+    console.log(user);
     if (!user) {
-      return res.status(404).send({
-        message: "User does not  exists"
-      });
+      throw new Error("User not found");
     }
-    // Step 3 - Update user verification status to true
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified" });
+    }
+
     user.isVerified = true;
     await user.save();
-    return res.status(200).send({
-      message: "Account Verified"
-    });
-  } catch (err) {
-    return res.status(500).send(err);
+
+    return res.status(200).json({ message: "Email verification successful" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
