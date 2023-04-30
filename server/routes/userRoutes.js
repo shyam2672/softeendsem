@@ -12,5 +12,6 @@ router.post("/getuserinfo", userctrl.getuserinfo);
 router.post("/setrandomusername",userctrl.setrandomusername);
 router.post("/rateuser",userctrl.rateuser);
 router.post("/getrating",userctrl.getrating);
+router.get("/verify/:id", userctrl.verify);
 
 module.exports = router;

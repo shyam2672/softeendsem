@@ -1,6 +1,22 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const friendrequests = require("../models/friendrequests");
+const jwt = require("jsonwebtoken");
+
+const nodemailer = require("nodemailer");
+const transporter = nodemailer.createTransport({
+  host: "smtp-mail.outlook.com", // hostname
+  service: "outlook", // service name
+  secureConnection: false,
+  tls: {
+    ciphers: "SSLv3", // tls version
+  },
+  auth: {
+    user: process.env.EMAIL_USERNAME,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
 module.exports.login = async (req, res, next) => {
   try {
     // console.log(req.body);
@@ -14,6 +30,8 @@ module.exports.login = async (req, res, next) => {
     //  isPasswordValid = await(password == user.password)
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
+    if (user.isVerified == false)
+      return res.json({ msg: "Email not verified", status: false });
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
@@ -44,13 +62,15 @@ module.exports.getuserinfo = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   // console.log(req.body);
   try {
-    const { username, email, password, gender, avatarImage } = req.body;
+    const { username, email, password, gender, avatarImage, isVerified } =
+      req.body;
     const usernameCheck = await User.findOne({ username });
     if (usernameCheck)
       return res.json({ msg: "Username already used", status: false });
     const emailCheck = await User.findOne({ email });
     if (emailCheck)
       return res.json({ msg: "Email already used", status: false });
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -62,11 +82,61 @@ module.exports.register = async (req, res, next) => {
     });
     // console.log(user);
 
+    const verificationToken = user.generateVerificationToken();
+    console.log("verificationToken = " + verificationToken);
+    const verificationLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    console.log("verificationLink = " + verificationLink);
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: email,
+      subject: "Verify your email",
+      html: `<h1>Click on the link below to verify your email</h1><br><a href="${verificationLink}">Verify Email</a>`,
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.log(err);
+        return res.json({ msg: "Error sending email", status: false });
+      }
+      console.log(" info " + info);
+      delete user.password;
+      return res.json({ status: true, user });
+    });
+
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
     // console.log(ex);
     next(ex);
+  }
+};
+
+exports.verify = async (req, res) => {
+  try {
+    const token = req.params.id;
+    console.log("token = " + token);
+    const decoded = jwt.verify(
+      token,
+      process.env.USER_VERIFICATION_TOKEN_SECRET
+    );
+    const userId = decoded.ID;
+
+    const user = await User.findById(userId);
+    console.log(user);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User already verified" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    return res.status(200).json({ message: "Email verification successful" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
