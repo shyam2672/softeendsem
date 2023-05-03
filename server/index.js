@@ -55,7 +55,7 @@ global.randomonlineUsers = [];
 global.availableUsers = [];
 global.rooms = [];
 global.queue = [];
-const offlineMessages={};
+const offlineMessages = {};
 
 io.on("connection", (socket) => {
   global.chatSocket = socket;
@@ -65,15 +65,15 @@ io.on("connection", (socket) => {
     console.log(userId);
 
     console.log(userId.userId);
-    onlineUsers[userId.userId]= socket.id;
+    onlineUsers[userId.userId] = socket.id;
     console.log(onlineUsers);
 
-const messages=offlineMessages[userId.userId];
-console.log(messages);
-if(messages && messages.length>0){
-  socket.emit('offlineMessages',{"ashishrajprashantshyam":messages});
+    const messages = offlineMessages[userId.userId];
+    console.log(messages);
+    if (messages && messages.length > 0) {
+      socket.emit("offlineMessages", { ashishrajprashantshyam: messages });
       delete offlineMessages[userId.userId];
-}
+    }
     // console.log(onlineUsers);
   });
 
@@ -88,14 +88,19 @@ if(messages && messages.length>0){
     // console.log(sendUserSocket);
     // console.log(data.to);
     if (sendUserSocket) {
-      socket
-        .to(sendUserSocket)
-        .emit("msg-recieve",{message: data.message,from: data.from,to: data.to});
+      socket.to(sendUserSocket).emit("msg-recieve", {
+        message: data.message,
+        from: data.from,
+        to: data.to,
+      });
     } else {
-    if(!offlineMessages[data.to]){
-      offlineMessages[data.to]=[];
-    }
-      offlineMessages[data.to].push({"prashantrajprashantshyam": `"${data.from}"`,"shyamrajprashantshyam":   `"${data.message}"` });
+      if (!offlineMessages[data.to]) {
+        offlineMessages[data.to] = [];
+      }
+      offlineMessages[data.to].push({
+        prashantrajprashantshyam: `"${data.from}"`,
+        shyamrajprashantshyam: `"${data.message}"`,
+      });
       console.log(offlineMessages[data.to]);
     }
   });
@@ -123,7 +128,7 @@ if(messages && messages.length>0){
 
     //remove the randomly selected user from the available users list
     availableUsers.splice(selected, 1);
-    
+
     // Make a user object and add it to the onlineUsers list and rooms too(maybe we can add to room once we have the partner.)
     // create an unique id here.
     // let uID = uniqueID();
@@ -158,7 +163,6 @@ if(messages && messages.length>0){
           message: "Added to privateRoom",
           roomID: unfilledRooms[0].roomID,
           isfilled: true,
-        
         });
         socket.roomID = unfilledRooms[0].roomID;
         io.sockets.in(socket.roomID).emit("strangerConnected", {
@@ -182,8 +186,10 @@ if(messages && messages.length>0){
       }
     });
   }
-  // console.log("sdfrwsd");
+  // socket.on("randomconnect", (data) => {
   asyncCall();
+  // });
+  // console.log("sdfrwsd");
 
   socket.on("sendMessage", (data) => {
     // let timeStamp = moment().format("LT");
@@ -212,20 +218,13 @@ if(messages && messages.length>0){
     });
   });
 
- 
-  socket.on("typing", (data) => {
-    io.sockets.in(data.room).emit("addTyping", {
-      senderId: windowID.id,
-      typingStatus: data.typingStatus,
-    });
-  });
-
   socket.on("disconnectprivate", (data) => {
-      delete  onlineUsers[data.userid];
+    delete onlineUsers[data.userid];
   });
 
   // Disconnect the user
-  socket.on("disconnect", () => {
+  socket.on("disconnectRandom", (data) => {
+    console.log("yes");
     let index = randomonlineUsers.indexOf(socket);
     randomonlineUsers.splice(index, 1);
     index = rooms.findIndex((x) => x.roomID == windowID.roomID);
@@ -235,9 +234,11 @@ if(messages && messages.length>0){
           title: "Stranger is disconnected!",
           message: "Please click on 'New' button to connect to someone else.",
         };
-        io.sockets
-          .in(windowID.roomID)
-          .emit("alone", { warning: warning, roomID: windowID.roomID });
+        io.sockets.in(windowID.roomID).emit("alone", {
+          warning: warning,
+          roomID: windowID.roomID,
+          randomid: data.userid,
+        });
         rooms.splice(index, 1);
       } else {
         rooms.splice(index, 1);

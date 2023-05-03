@@ -82,25 +82,25 @@ module.exports.register = async (req, res, next) => {
     });
     // console.log(user);
 
-    const verificationToken = user.generateVerificationToken();
-    console.log("verificationToken = " + verificationToken);
-    const verificationLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
-    console.log("verificationLink = " + verificationLink);
-    const mailOptions = {
-      from: process.env.EMAIL_USERNAME,
-      to: email,
-      subject: "Verify your email",
-      html: `<h1>Click on the link below to verify your email</h1><br><a href="${verificationLink}">Verify Email</a>`,
-    };
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.log(err);
-        return res.json({ msg: "Error sending email", status: false });
-      }
-      console.log(" info " + info);
-      delete user.password;
-      return res.json({ status: true, user });
-    });
+    // const verificationToken = user.generateVerificationToken();
+    // console.log("verificationToken = " + verificationToken);
+    // const verificationLink = `http://localhost:5000/api/auth/verify/${verificationToken}`;
+    // console.log("verificationLink = " + verificationLink);
+    // const mailOptions = {
+    //   from: process.env.EMAIL_USERNAME,
+    //   to: email,
+    //   subject: "Verify your email",
+    //   html: `<h1>Click on the link below to verify your email</h1><br><a href="${verificationLink}">Verify Email</a>`,
+    // };
+    // transporter.sendMail(mailOptions, (err, info) => {
+    //   if (err) {
+    //     console.log(err);
+    //     return res.json({ msg: "Error sending email", status: false });
+    //   }
+    //   console.log(" info " + info);
+    //   delete user.password;
+    //   return res.json({ status: true, user });
+    // });
 
     delete user.password;
     return res.json({ status: true, user });
