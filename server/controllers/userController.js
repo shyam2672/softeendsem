@@ -30,8 +30,8 @@ module.exports.login = async (req, res, next) => {
     //  isPasswordValid = await(password == user.password)
     if (!isPasswordValid)
       return res.json({ msg: "Incorrect Username or Password", status: false });
-    if (user.isVerified == false)
-      return res.json({ msg: "Email not verified", status: false });
+    // if (user.isVerified == false)
+    //   return res.json({ msg: "Email not verified", status: false });
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
