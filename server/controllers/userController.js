@@ -3,19 +3,19 @@ const bcrypt = require("bcryptjs");
 const friendrequests = require("../models/friendrequests");
 const jwt = require("jsonwebtoken");
 
-const nodemailer = require("nodemailer");
-const transporter = nodemailer.createTransport({
-  host: "smtp-mail.outlook.com", // hostname
-  service: "outlook", // service name
-  secureConnection: false,
-  tls: {
-    ciphers: "SSLv3", // tls version
-  },
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// const nodemailer = require("nodemailer");
+// const transporter = nodemailer.createTransport({
+//   host: "smtp-mail.outlook.com", // hostname
+//   service: "outlook", // service name
+//   secureConnection: false,
+//   tls: {
+//     ciphers: "SSLv3", // tls version
+//   },
+//   auth: {
+//     user: process.env.EMAIL_USERNAME,
+//     pass: process.env.EMAIL_PASSWORD,
+//   },
+// });
 
 module.exports.login = async (req, res, next) => {
   try {

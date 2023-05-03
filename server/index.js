@@ -7,7 +7,7 @@ const User = require("./models/userModel");
 const socket = require("socket.io");
 const utils = require("./utils.js");
 const uniqueID = require("uniqid");
-
+const messageRoutes = require("./routes/messages");
 // require("./globals.js");
 
 // const authRoutes = require("./routes/auth");
@@ -24,8 +24,10 @@ app.use(
 );
 app.use(cors());
 app.use(express.json());
-
+app.use("/api/messages", messageRoutes);
 app.use("/api/auth", authRoutes);
+// app.use("/api/auth", authRoutes);
+
 
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -70,39 +72,39 @@ io.on("connection", (socket) => {
 
     const messages = offlineMessages[userId.userId];
     console.log(messages);
-    if (messages && messages.length > 0) {
-      socket.emit("offlineMessages", { ashishrajprashantshyam: messages });
-      delete offlineMessages[userId.userId];
-    }
+    // if (messages && messages.length > 0) {
+    //   socket.emit("offlineMessages", { ashishrajprashantshyam: messages });
+    //   delete offlineMessages[userId.userId];
+    // }
     // console.log(onlineUsers);
   });
 
   socket.on("send-msg", (data) => {
-    console.log(data.to);
+    // console.log(data.to);
 
-    const sendUserSocket = onlineUsers[data.to];
+    // const sendUserSocket = onlineUsers[data.to];
 
-    console.log(data);
-    console.log(sendUserSocket);
+    // console.log(data);
+    // console.log(sendUserSocket);
 
     // console.log(sendUserSocket);
     // console.log(data.to);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("msg-recieve", {
+    // if (sendUserSocket) {
+      socket.broadcast.emit("msg-recieve", {
         message: data.message,
         from: data.from,
         to: data.to,
       });
-    } else {
-      if (!offlineMessages[data.to]) {
-        offlineMessages[data.to] = [];
-      }
-      offlineMessages[data.to].push({
-        prashantrajprashantshyam: `"${data.from}"`,
-        shyamrajprashantshyam: `"${data.message}"`,
-      });
-      console.log(offlineMessages[data.to]);
-    }
+    // } else {
+    //   if (!offlineMessages[data.to]) {
+    //     offlineMessages[data.to] = [];
+    //   }
+    //   offlineMessages[data.to].push({
+    //     prashantrajprashantshyam: `"${data.from}"`,
+    //     shyamrajprashantshyam: `"${data.message}"`,
+    //   });
+    //   console.log(offlineMessages[data.to]);
+    // }
   });
 
   let windowID = socket;
@@ -124,7 +126,7 @@ io.on("connection", (socket) => {
     //get index of randomly selected user from the available users list
     let selected = Math.floor(Math.random() * availableUsers.length);
     //store the user in Socket
-    socket = availableUsers[selected];
+    let socketsel = availableUsers[selected];
 
     //remove the randomly selected user from the available users list
     availableUsers.splice(selected, 1);
@@ -138,8 +140,8 @@ io.on("connection", (socket) => {
     // socket.join(uID);
     // // emit the room id to the frontend side.
     // socket.emit('private ack', { "message": "Added to privateRoom", "roomID": uID });
-    socket.emit("ack", { id: socket.id, msg: "User connected" });
-    randomonlineUsers.push(socket);
+    // socket.emit("ack", { id: socket.id, msg: "User connected" });
+    // randomonlineUsers.push(socket);
 
     socket.on("privateRoom", (user) => {
       // console.log("ffff");
