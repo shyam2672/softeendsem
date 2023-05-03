@@ -203,6 +203,40 @@ module.exports.addfriend = async (req, res, next) => {
     next(ex);
   }
 };
+
+
+module.exports.deletefriend = async (req, res, next) => {
+  try {
+    // const user = await User.find({ _id:  req.params.id  });
+    // const senderid = req.body.senderid;
+    const userid = req.body.friendid;
+    // const user=user.findOne({receiver});
+    User.updateOne(
+      { _id: userId },
+      { $pull: { friends: friendId } },
+      (error, result) => {
+        if (error) {
+          console.error(error);
+          // handle the error
+        } else {
+          console.log(result);
+    return res.json({status:false });
+
+          // handle the result
+        }
+      }
+    );
+
+    // console.log(user);
+    // console.log(user1);
+
+    return res.json({status:true });
+
+    // const request=friendrequests.create({sender,receiver});
+  } catch (ex) {
+    next(ex);
+  }
+};
 module.exports.getrequests = async (req, res, next) => {
   try {
     // const user = await User.find({ _id:  req.params.id  });
