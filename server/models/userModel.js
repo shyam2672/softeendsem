@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.generateVerificationToken = function () {
   const user = this;
-  console.log(user);
+  // console.log(user);
   const verificationToken = jwt.sign(
     { ID: user._id },
     process.env.USER_VERIFICATION_TOKEN_SECRET,

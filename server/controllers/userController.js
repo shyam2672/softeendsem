@@ -48,7 +48,7 @@ module.exports.getuserinfo = async (req, res, next) => {
     // delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
-    // console.log(ex);
+    console.log(ex);
     next(ex);
   }
 };
@@ -99,7 +99,7 @@ module.exports.register = async (req, res, next) => {
     delete user.password;
     return res.json({ status: true, user });
   } catch (ex) {
-    // console.log(ex);
+    console.log(ex);
     next(ex);
   }
 };
@@ -107,7 +107,7 @@ module.exports.register = async (req, res, next) => {
 exports.verify = async (req, res) => {
   try {
     const token = req.params.id;
-    console.log("token = " + token);
+    // console.log("token = " + token);
     const decoded = jwt.verify(
       token,
       process.env.USER_VERIFICATION_TOKEN_SECRET
@@ -115,7 +115,7 @@ exports.verify = async (req, res) => {
     const userId = decoded.ID;
 
     const user = await User.findById(userId);
-    console.log(user);
+    // console.log(user);
     if (!user) {
       throw new Error("User not found");
     }
@@ -215,7 +215,7 @@ module.exports.rateuser = async (req, res, next) => {
       { rating: rating, ratedby: n },
       { new: true }
     );
-    console.log(requests);
+    // console.log(requests);
     return res.json(requests);
   } catch (ex) {
     next(ex);
@@ -282,8 +282,8 @@ module.exports.setrandomusername = async (req, res, next) => {
   try {
     const userId = req.body.id;
     const random_username = req.body.random_username;
-    console.log(random_username);
-    console.log(userId);
+    // console.log(random_username);
+    // console.log(userId);
     const userData = await User.findByIdAndUpdate(
       userId,
       {
@@ -291,7 +291,7 @@ module.exports.setrandomusername = async (req, res, next) => {
       },
       { new: true }
     );
-    console.log(userData);
+    // console.log(userData);
     return res.json({
       random_username: userData.random_username,
     });

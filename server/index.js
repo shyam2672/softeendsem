@@ -61,17 +61,17 @@ const offlineMessages = {};
 
 io.on("connection", (socket) => {
   global.chatSocket = socket;
-  console.log("user connected");
+  // console.log("user connected");
   // console.log(randomonlineUsers);
   socket.on("add-user", (userId) => {
-    console.log(userId);
+    // console.log(userId);
 
-    console.log(userId.userId);
+    // console.log(userId.userId);
     onlineUsers[userId.userId] = socket.id;
-    console.log(onlineUsers);
+    // console.log(onlineUsers);
 
     const messages = offlineMessages[userId.userId];
-    console.log(messages);
+    // console.log(messages);
     // if (messages && messages.length > 0) {
     //   socket.emit("offlineMessages", { ashishrajprashantshyam: messages });
     //   delete offlineMessages[userId.userId];
@@ -144,8 +144,7 @@ io.on("connection", (socket) => {
     // randomonlineUsers.push(socket);
 
     socket.on("privateRoom", (user) => {
-      // console.log("ffff");
-      console.log(user);
+      // console.log(user);
       let unfilledRooms = rooms.filter((room) => {
         if (!room.isFilled) {
           return room;
@@ -160,7 +159,7 @@ io.on("connection", (socket) => {
         rooms[index].isFilled = true;
         unfilledRooms[0].isFilled = true;
         unfilledRooms[0].user2 = user;
-        console.log(rooms);
+        // console.log(rooms);
         socket.emit("private ack", {
           message: "Added to privateRoom",
           roomID: unfilledRooms[0].roomID,
@@ -178,7 +177,7 @@ io.on("connection", (socket) => {
         rooms.push({ roomID: uID, isFilled: false, user1: user, user2: "" });
         socket.join(uID);
         socket.roomID = uID;
-        console.log(rooms);
+        // console.log(rooms);
 
         socket.emit("private ack", {
           message: "Added to privateRoom",
@@ -195,7 +194,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", (data) => {
     // let timeStamp = moment().format("LT");
-    console.log(data);
+    // console.log(data);
     io.sockets.in(data.room_id).emit("newMessage", {
       message: data.message,
       senderId: data.from,
@@ -205,7 +204,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendrequest", (data) => {
-    console.log(data);
+    // console.log(data);
     io.sockets.in(data.room).emit("receiverequest", {
       sendersocketId: windowID.id,
       senderid: data.from,
@@ -226,7 +225,7 @@ io.on("connection", (socket) => {
 
   // Disconnect the user
   socket.on("disconnectRandom", (data) => {
-    console.log("yes");
+    // console.log("yes");
     let index = randomonlineUsers.indexOf(socket);
     randomonlineUsers.splice(index, 1);
     index = rooms.findIndex((x) => x.roomID == windowID.roomID);
