@@ -54,7 +54,7 @@ module.exports.addMessage = async (req, res, next) => {
 module.exports.deleteMessage = async (req, res, next) => {
   try {
     const { from, to } = req.body;
-    const deletedCount = await Message.deleteMany({
+    const deletedCount = await Messages.deleteMany({
       users: { $all: [from, to] },
     });
 
