@@ -42,14 +42,8 @@ module.exports.login = async (req, res, next) => {
 module.exports.getuserinfo = async (req, res, next) => {
   // console.log(req.body);
   try {
-    const { _id } = req.body;
-    const user = await User.findOne({ _id }).select({
-      username,
-      email,
-      rating,
-      avatarImage,
-      gender,
-    });
+    const { username } = req.body;
+    const user = await User.findOne({ username });
     // console.log(user);
     // delete user.password;
     return res.json({ status: true, user });
